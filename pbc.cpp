@@ -128,7 +128,7 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 	for(;strlen(p);)
 	{
 		char *n =  NULL, *kn = NULL, *copy = NULL;
-		int n_len = 0, len_after_ww = 0, len_before_ww = 0;
+		int len_after_ww = 0, len_before_ww = 0;
 		int str_len = 0, cur_descr_width = first ? max_x - cur_par_width : descr_width;
 
 		while(*p == ' ')
@@ -145,6 +145,8 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 
 		if (str_len > cur_descr_width)
 		{ 
+			int n_len = 0;
+
 			while (*n != ' ' && n_len < max_wrap_width)
 			{
 				n--;
@@ -531,6 +533,16 @@ void dump(const int fd, const bool json)
 		json_double("USB-output-current", get_usb_output_current(state), true);
 		json_uint32_t("battery-uptime", get_battery_uptime(state), true);
 
+		std::vector<uint8_t> c = get_i2c_BQ24295(state);
+		for(size_t i=0; i<c.size(); i++) {
+			char *buffer = NULL;
+			asprintf(&buffer, "bq24295-reg-%zu", i);
+
+			json_uint32_t(buffer, c.at(i), true);
+
+			free(buffer);
+		}
+
 		json_bool("battery-overvoltage", get_battery_overvoltage(state), true);
 		json_bool("auto-send-statemachine", get_auto_send_statemachine(state), true);
 		json_bool("virtual-serial-port-connected", get_virtual_serial_port_connected(state), true);
@@ -553,6 +565,16 @@ void dump(const int fd, const bool json)
 		printf("HV output voltage:\t%f\n", get_hv_output_voltage(state));
 		printf("USB output current:\t%f\n", get_usb_output_current(state));
 		printf("Battery uptime:\t%u\n", get_battery_uptime(state));
+
+		printf("BQ24295 registers:\t");
+		std::vector<uint8_t> c = get_i2c_BQ24295(state);
+		for(size_t i=0; i<c.size(); i++) {
+			if (i)
+				printf(" ");
+
+			printf("%02x", c.at(i));
+		}
+		printf("\n");
 
 		if (get_battery_overvoltage(state))
 			printf("Battery overvoltage!!\n");
