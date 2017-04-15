@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
@@ -36,14 +37,6 @@ void setser(int fd)
 		error_exit(true, "tcsetattr failed");
 
 	tcflush(fd, TCIOFLUSH);
-}
-
-void autosend(const int fd, const bool state)
-{
-	uint8_t b = state ? 0x47 : 0x48;
-
-	if (write(fd, &b, 1) <= 0)
-		error_exit(true, "Problem sending command to powerbank");
 }
 
 #define SWITCHES_COLUMN_WIDTH	24
@@ -117,8 +110,10 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 		str_add(&line, "%-4s / %s", short_str, long_str);
 	else if (long_str)
 		str_add(&line, "%s", long_str);
-	else
+	else if (short_str)
 		str_add(&line, "%s", short_str);
+	else
+		line = strdup("");
 
 	cur_par_width = fprintf(stderr, "%-*s ", par_width, line);
 
@@ -181,14 +176,44 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 	}
 }
 
+std::vector<uint8_t> get_bytes(const int fd, const unsigned n)
+{
+	std::vector<uint8_t> out;
+
+	struct pollfd fds[1] = { { fd, POLLIN, 0 } };
+
+	for(unsigned i=0; i<n; i++) {
+		fds[0].revents = 0;
+
+		int rc = poll(fds, 1, 100); // 100ms timeout
+		if (rc == -1)
+			error_exit(true, "Poll on powerbank failed");
+		if (rc == 0)
+			error_exit(true, "Powerbank went silent");
+
+		uint8_t c = 0;
+		rc = read(fd, &c, 1);
+		if (rc <= 0)
+			error_exit(true, "Problem receiving state from powerbank");
+
+		out.push_back(c);
+	}
+
+	return out;
+}
+
+void request(const int fd, const uint8_t cmd)
+{
+	if (write(fd, &cmd, 1) != 1)
+		error_exit(true, "Problem sending command to powerbank");
+}
+
 std::vector<uint8_t> get_state(const int fd)
 {
 	std::vector<uint8_t> out;
 
 retry:
-	uint8_t cmd = 0x70;
-	if (write(fd, &cmd, 1) != 1)
-		error_exit(true, "Problem sending command to powerbank");
+	request(fd, 0x70);
 
 	uint8_t buffer[51], *p = buffer;
 
@@ -276,54 +301,85 @@ std::vector<uint8_t> get_i2c_BQ24295(const std::vector<uint8_t> & state)
 	return out;
 }
 
-uint8_t get_flags(const std::vector<uint8_t> & state)
+uint8_t get_flags_0x22(const std::vector<uint8_t> & state)
 {
 	return state.at(0x22);
 }
 
 bool get_auto_send_statemachine(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 128;
+	return get_flags_0x22(state) & 128;
 }
 
 bool get_virtual_serial_port_connected(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 64;
+	return get_flags_0x22(state) & 64;
 }
 
 bool get_charging_port_plugged_in(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 32;
+	return get_flags_0x22(state) & 32;
 }
 
 bool get_warnings_enabled(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 16;
+	return get_flags_0x22(state) & 16;
 }
 
 bool get_charger_fault(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 8;
+	return get_flags_0x22(state) & 8;
 }
 
 bool get_battery_overvoltage(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 4;
+	return get_flags_0x22(state) & 4;
 }
 
 bool get_battery_too_cold(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 2;
+	return get_flags_0x22(state) & 2;
 }
 
 bool get_battery_too_hot(const std::vector<uint8_t> & state)
 {
-	return get_flags(state) & 1;
+	return get_flags_0x22(state) & 1;
+}
+
+uint8_t get_flags_0x23(const std::vector<uint8_t> & state)
+{
+	return state.at(0x23);
+}
+
+//
+bool get_hv_output_on(const std::vector<uint8_t> & state)
+{
+	return get_flags_0x23(state) & 128;
+}
+
+bool get_usb_output_on(const std::vector<uint8_t> & state)
+{
+	return get_flags_0x23(state) & 64;
+}
+
+uint32_t get_battery_uptime(const std::vector<uint8_t> & state)
+{
+	return (state.at(0x27) << 24) | (state.at(0x26) << 16) | (state.at(0x25) << 8) | state.at(0x24);
 }
 
 void json_double(const char *name, const double v, const bool next)
 {
 	printf("\"%s\" : %f", name, v);
+
+	if (next)
+		printf(",\n");
+	else
+		printf("\n");
+}
+
+void json_uint32_t(const char *name, const uint32_t v, const bool next)
+{
+	printf("\"%s\" : %u", name, v);
 
 	if (next)
 		printf(",\n");
@@ -341,17 +397,96 @@ void json_bool(const char *name, const bool v, const bool next)
 		printf("\n");
 }
 
+std::string to_string(const std::vector<uint8_t> & bytes, const unsigned n)
+{
+	std::string out;
+
+	for(unsigned i=0; i<n; i++)
+		out += char(bytes.at(i));
+
+	return out;
+}
+
+std::string get_name(const int fd)
+{
+	request(fd, 0x42);
+
+	std::vector<uint8_t> name_bytes = get_bytes(fd, 18);
+
+	return to_string(name_bytes, 16);
+}
+
+void set_name(const int fd, const char *const name)
+{
+	char temp[17];
+	memset(temp, 0x00, sizeof(temp));
+
+	if (name) {
+		size_t l = strlen(name);
+
+		if (l > 16)
+			error_exit(false, "Name too long");
+
+		memcpy(temp, name, l);
+	}
+
+	request(fd, 0x43);
+
+	if (write(fd, temp, 16) != 16)
+		error_exit(true, "Error talking to power bank");
+}
+
+char to_hex(const int v)
+{
+	if (v <= 9)
+		return '0' + v;
+
+	return 'a' + v - 10;
+}
+
+void set_bq24295(const int fd, const int idx, const char *parameter)
+{
+	if (!parameter)
+		error_exit(false, "Parameter missing");
+
+	if (idx < 0 || idx > 9)
+		error_exit(false, "Index out of range");
+
+	unsigned p = atoi(parameter);
+
+	char cmd[4] = { 0x71, char('0' + idx), to_hex(p >> 4), to_hex(p & 15) };
+
+	if (write(fd, cmd, sizeof cmd) != sizeof cmd)
+		error_exit(true, "Error talking to power bank");
+}
+
+
+void json_string(const char *name, const std::string & v, const bool next)
+{
+	printf("\"%s\" : \"%s\"", name, v.c_str());
+
+	if (next)
+		printf(",\n");
+	else
+		printf("\n");
+}
+
 void dump(const int fd, const bool json)
 {
 	const std::vector<uint8_t> state = get_state(fd);
 
+	std::string name = get_name(fd);
+
 	if (json) {
 		printf("{\n");
+		json_string("name", name, true);
+
 		json_double("battery-voltage", get_battery_voltage(state), true);
 		json_double("charging-current", get_charging_current(state), true);
 		json_double("HV-output-current", get_hv_output_current(state), true);
 		json_double("HV-output-voltage", get_hv_output_voltage(state), true);
 		json_double("USB-output-current", get_usb_output_current(state), true);
+		json_uint32_t("battery-uptime", get_battery_uptime(state), true);
 
 		json_bool("battery-overvoltage", get_battery_overvoltage(state), true);
 		json_bool("auto-send-statemachine", get_auto_send_statemachine(state), true);
@@ -360,16 +495,21 @@ void dump(const int fd, const bool json)
 		json_bool("warnings-enabled", get_warnings_enabled(state), true);
 		json_bool("charger-fault", get_charger_fault(state), true);
 		json_bool("battery-too-cold", get_battery_too_cold(state), true);
-		json_bool("battery-too-hot", get_battery_too_hot(state), false);
+		json_bool("battery-too-hot", get_battery_too_hot(state), true);
+		json_bool("hv-output", get_hv_output_on(state), true);
+		json_bool("usb-output", get_usb_output_on(state), false);
 		printf("}\n");
 	}
 	else {
+		printf("name:\t%s\n", name.c_str());
+
 		printf("temperature:\t%f\n", get_temp(state));
 		printf("battery voltage:\t%f\n", get_battery_voltage(state));
 		printf("charging current:\t%f\n", get_charging_current(state));
 		printf("HV output current:\t%f\n", get_hv_output_current(state));
 		printf("HV output voltage:\t%f\n", get_hv_output_voltage(state));
 		printf("USB output current:\t%f\n", get_usb_output_current(state));
+		printf("Battery uptime:\t%u\n", get_battery_uptime(state));
 
 		if (get_battery_overvoltage(state))
 			printf("Battery overvoltage!!\n");
@@ -383,11 +523,14 @@ void dump(const int fd, const bool json)
 			printf("Warnings enabled\n");
 		if (get_charger_fault(state))
 			printf("Charger fault\n");
-
 		if (get_battery_too_cold(state))
 			printf("Battery too cold!\n");
 		else if (get_battery_too_hot(state))
 			printf("Battery too hot!!!\n");
+		if (get_hv_output_on(state))
+			printf("HV output on\n");
+		if (get_usb_output_on(state))
+			printf("USB output on\n");
 	}
 }
 
@@ -426,13 +569,23 @@ void help(void)
 	fprintf(stderr, gettext(" *** powerbankcontrol ***\n"));
 	format_help("-d x", "--device", gettext("(virtual in case of USB -)serial device to which the powerbank is connected"));
 	format_help("-f", "--fork", gettext("fork into the background (become daemon)"));
-	format_help("-m", "--mode", gettext("mode of this tool: ups, dump"));
+	format_help("-m", "--mode", gettext("mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"));
+	format_help(NULL, NULL, gettext("- ups: shutdown system when power is off for a while (-D) using a user selected command (-s)"));
+	format_help(NULL, NULL, gettext("- dump: dump configuration & state of power bank"));
+	format_help(NULL, NULL, gettext("- set-name: configure name of bank"));
+	format_help(NULL, NULL, gettext("- set-bq24295: configure charger chip, see data-sheet at http://www.ti.com/lit/ds/symlink/bq24295.pdf"));
+	format_help(NULL, NULL, gettext("- set-usb: toggle state of USB power (-p: on/off)"));
+	format_help(NULL, NULL, gettext("- set-hv: toggle state of HV power (-p: on/off)"));
+	format_help("-p", "--parameter", gettext("parameter (if any) for the command chosen"));
+	format_help("-i", "--index", gettext("index (if any) for the command chosen"));
 	format_help("-D", "--power-off-after", gettext("how long to wait before shutdown after power loss"));
 	format_help("-s", "--shutdown-command", gettext("command to use to power down system (see -D and -m ups)"));
 	format_help("-j", "--json", gettext("JSON output for -m dump"));
+	format_help("-v", "--version", gettext("get version of this program"));
+	format_help("-h", "--help", gettext("get this help"));
 }
 
-typedef enum { M_UPS, M_DUMP } pbc_mode_t;
+typedef enum { M_UPS, M_DUMP, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_SET_HV } pbc_mode_t;
 
 int main(int argc, char *argv[])
 {
@@ -441,24 +594,28 @@ int main(int argc, char *argv[])
 	pbc_mode_t m = M_DUMP;
 	unsigned power_off_after = 60;
 	const char *poweroff_script = "/sbin/poweroff";
+	const char *parameter = NULL;
+	int idx = -1;
 
 	determine_terminal_size();
 
 	static struct option long_options[] =
 	{
-		{"device",   1, NULL, 'd' },
+		{"device",   	1, NULL, 'd' },
 		{"fork",	0, NULL, 'f' },
 		{"mode",	0, NULL, 'm' },
-		{"power-off-after",   1, NULL, 'D' },
-		{"shutdown-command",   1, NULL, 's' },
-		{"json",   0, NULL, 'j' },
+		{"power-off-after",	1, NULL, 'D' },
+		{"shutdown-command",	1, NULL, 's' },
+		{"json",   	0, NULL, 'j' },
+		{"parameter",  	0, NULL, 'p' },
+		{"index",  	0, NULL, 'i' },
 		{"version",	0, NULL, 'V' },
 		{"help",	0, NULL, 'h' },
 		{NULL,		0, NULL, 0   }
 	};
 
 	int c = -1;
-	while((c = getopt_long(argc, argv, "d:fm:D:s:jVh", long_options, NULL)) != -1)
+	while((c = getopt_long(argc, argv, "d:fm:D:s:jp:i:Vh", long_options, NULL)) != -1)
 	{
 		switch(c) {
 			case 'd':
@@ -474,6 +631,14 @@ int main(int argc, char *argv[])
 					m = M_DUMP;
 				else if (strcasecmp(optarg, "ups") == 0)
 					m = M_UPS;
+				else if (strcasecmp(optarg, "set-name") == 0)
+					m = M_SET_NAME;
+				else if (strcasecmp(optarg, "set-bq24295") == 0)
+					m = M_SET_bq24295;
+				else if (strcasecmp(optarg, "set-usb") == 0)
+					m = M_SET_USB;
+				else if (strcasecmp(optarg, "set-hv") == 0)
+					m = M_SET_HV;
 				else
 					error_exit(false, "%s is an unknown mode", optarg);
 				break;
@@ -488,6 +653,14 @@ int main(int argc, char *argv[])
 
 			case 'j':
 				json = true;
+				break;
+
+			case 'p':
+				parameter = optarg;
+				break;
+
+			case 'i':
+				idx = atoi(optarg);
 				break;
 
 			case 'V':
@@ -513,11 +686,13 @@ int main(int argc, char *argv[])
 
 	setser(fd);
 
-	autosend(fd, false); // ! we use polling
-
 	if (m == M_DUMP)
 		dump(fd, json);
-	else
+	else if (m == M_SET_NAME)
+		set_name(fd, parameter);
+	else if (m == M_SET_bq24295)
+		set_bq24295(fd, idx, parameter);
+	else if (m == M_UPS)
 		ups(fd, power_off_after, poweroff_script);
 
 	return 0;
