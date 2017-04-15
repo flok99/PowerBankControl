@@ -120,14 +120,12 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 
 	free(line);
 
-	if (par_width + 1 >= max_x || cur_par_width >= max_x)
-	{
+	if (par_width + 1 >= max_x || cur_par_width >= max_x) {
 		fprintf(stderr, "%s\n", descr);
 		return;
 	}
 
-	for(;strlen(p);)
-	{
+	for(;strlen(p);) {
 		char *n =  NULL, *kn = NULL, *copy = NULL;
 		int len_after_ww = 0, len_before_ww = 0;
 		int str_len = 0, cur_descr_width = first ? max_x - cur_par_width : descr_width;
@@ -144,12 +142,10 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 		n = &p[len_before_ww];
 		kn = n;
 
-		if (str_len > cur_descr_width)
-		{ 
+		if (str_len > cur_descr_width) { 
 			int n_len = 0;
 
-			while (*n != ' ' && n_len < max_wrap_width)
-			{
+			while (*n != ' ' && n_len < max_wrap_width) {
 				n--;
 				n_len++;
 			}
@@ -254,44 +250,41 @@ double get_temp(const std::vector<uint8_t> & state)
 	return v / 10.0;
 }
 
+double get_milli(const std::vector<uint8_t> & state, const int offset)
+{
+	int16_t v = state.at(offset + 0) | (state.at(offset + 1) << 8);
+
+	return v / 1000.0;
+}
+
 // mV
 double get_battery_voltage(const std::vector<uint8_t> & state)
 {
-	int16_t v = state.at(2) | (state.at(3) << 8);
-
-	return v / 1000.0;
+	return get_milli(state, 2);
 }
 
 // mA
 double get_charging_current(const std::vector<uint8_t> & state)
 {
-	int16_t v = state.at(4) | (state.at(5) << 8);
-
-	return v / 1000.0;
+	return get_milli(state, 4);
 }
 
 // mA
 double get_hv_output_current(const std::vector<uint8_t> & state)
 {
-	int16_t v = state.at(6) | (state.at(7) << 8);
-
-	return v / 1000.0;
+	return get_milli(state, 6);
 }
 
 // mA
 double get_usb_output_current(const std::vector<uint8_t> & state)
 {
-	int16_t v = state.at(8) | (state.at(9) << 8);
-
-	return v / 1000.0;
+	return get_milli(state, 8);
 }
 
 // mV
 double get_hv_output_voltage(const std::vector<uint8_t> & state)
 {
-	int16_t v = state.at(0x0a) | (state.at(0xb) << 8);
-
-	return v / 1000.0;
+	return get_milli(state, 0x0a);
 }
 
 std::vector<uint8_t> get_i2c_BQ24295(const std::vector<uint8_t> & state)
