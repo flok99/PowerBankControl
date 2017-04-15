@@ -416,6 +416,47 @@ std::string get_name(const int fd)
 	return to_string(name_bytes, 16);
 }
 
+std::string get_descr(const int fd)
+{
+	request(fd, 0xff);
+
+	std::vector<uint8_t> descr_bytes = get_bytes(fd, 24);
+
+	return to_string(descr_bytes, 24);
+}
+
+void inc_hv(const int fd)
+{
+	request(fd, 0x73);
+}
+
+void dec_hv(const int fd)
+{
+	request(fd, 0x74);
+}
+
+void set_hv(const int fd, const char *parameter)
+{
+	if (!parameter)
+		error_exit(false, "Parameter missing");
+
+	if (strcasecmp(parameter, "on"))
+		request(fd, 0x77);
+	else
+		request(fd, 0x78);
+}
+
+void set_usb(const int fd, const char *parameter)
+{
+	if (!parameter)
+		error_exit(false, "Parameter missing");
+
+	if (strcasecmp(parameter, "on"))
+		request(fd, 0x75);
+	else
+		request(fd, 0x76);
+}
+
 void set_name(const int fd, const char *const name)
 {
 	char temp[17];
@@ -460,7 +501,6 @@ void set_bq24295(const int fd, const int idx, const char *parameter)
 		error_exit(true, "Error talking to power bank");
 }
 
-
 void json_string(const char *name, const std::string & v, const bool next)
 {
 	printf("\"%s\" : \"%s\"", name, v.c_str());
@@ -477,9 +517,12 @@ void dump(const int fd, const bool json)
 
 	std::string name = get_name(fd);
 
+	std::string descr = get_descr(fd);
+
 	if (json) {
 		printf("{\n");
 		json_string("name", name, true);
+		json_string("descr", descr, true);
 
 		json_double("battery-voltage", get_battery_voltage(state), true);
 		json_double("charging-current", get_charging_current(state), true);
@@ -576,6 +619,8 @@ void help(void)
 	format_help(NULL, NULL, gettext("- set-bq24295: configure charger chip, see data-sheet at http://www.ti.com/lit/ds/symlink/bq24295.pdf"));
 	format_help(NULL, NULL, gettext("- set-usb: toggle state of USB power (-p: on/off)"));
 	format_help(NULL, NULL, gettext("- set-hv: toggle state of HV power (-p: on/off)"));
+	format_help(NULL, NULL, gettext("- inc-hv: increase HV voltage (in 64 steps)"));
+	format_help(NULL, NULL, gettext("- dec-hv: decrease HV voltage (in 64 steps)"));
 	format_help("-p", "--parameter", gettext("parameter (if any) for the command chosen"));
 	format_help("-i", "--index", gettext("index (if any) for the command chosen"));
 	format_help("-D", "--power-off-after", gettext("how long to wait before shutdown after power loss"));
@@ -585,7 +630,7 @@ void help(void)
 	format_help("-h", "--help", gettext("get this help"));
 }
 
-typedef enum { M_UPS, M_DUMP, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_SET_HV } pbc_mode_t;
+typedef enum { M_UPS, M_DUMP, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_SET_HV, M_INC_HV, M_DEC_HV } pbc_mode_t;
 
 int main(int argc, char *argv[])
 {
@@ -639,6 +684,10 @@ int main(int argc, char *argv[])
 					m = M_SET_USB;
 				else if (strcasecmp(optarg, "set-hv") == 0)
 					m = M_SET_HV;
+				else if (strcasecmp(optarg, "inc-hv") == 0)
+					m = M_INC_HV;
+				else if (strcasecmp(optarg, "dec-hv") == 0)
+					m = M_DEC_HV;
 				else
 					error_exit(false, "%s is an unknown mode", optarg);
 				break;
@@ -692,6 +741,14 @@ int main(int argc, char *argv[])
 		set_name(fd, parameter);
 	else if (m == M_SET_bq24295)
 		set_bq24295(fd, idx, parameter);
+	else if (m == M_SET_HV)
+		set_hv(fd, parameter);
+	else if (m == M_SET_USB)
+		set_usb(fd, parameter);
+	else if (m == M_INC_HV)
+		inc_hv(fd);
+	else if (m == M_DEC_HV)
+		dec_hv(fd);
 	else if (m == M_UPS)
 		ups(fd, power_off_after, poweroff_script);
 
