@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <libintl.h>
+#include <poll.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -184,14 +185,32 @@ std::vector<uint8_t> get_state(const int fd)
 {
 	std::vector<uint8_t> out;
 
-	uint8_t cmd = '?';
+retry:
+	uint8_t cmd = 0x70;
 	if (write(fd, &cmd, 1) != 1)
 		error_exit(true, "Problem sending command to powerbank");
 
-	// FIXME timeout of 100ms
-	uint8_t buffer[51];
-	if (read(fd, buffer, sizeof(buffer)) != sizeof(buffer))
-		error_exit(true, "Problem receiving state from powerbank");
+	uint8_t buffer[51], *p = buffer;
+
+	struct pollfd fds[1] = { { fd, POLLIN, 0 } };
+
+	int todo = sizeof buffer;
+	for(; todo;) {
+		fds[0].revents = 0;
+
+		int rc = poll(fds, 1, 100); // 100ms timeout
+		if (rc == -1)
+			error_exit(true, "Poll on powerbank failed");
+		if (rc == 0)
+			goto retry;
+
+		rc = read(fd, p, todo);
+		if (rc <= 0)
+			error_exit(true, "Problem receiving state from powerbank");
+
+		p += rc;
+		todo -= rc;
+	}
 
 	for(unsigned i=0; i<sizeof(buffer); i++)
 		out.push_back(buffer[i]);
