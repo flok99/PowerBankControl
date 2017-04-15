@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <libintl.h>
+#include <locale.h>
 #include <poll.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -24,7 +25,7 @@ void setser(int fd)
 	struct termios newtio;
 
 	if (tcgetattr(fd, &newtio) == -1)
-		error_exit(true, "tcgetattr failed");
+		error_exit(true, gettext("tcgetattr failed: did you select a powerbank serial port?"));
 
 	newtio.c_iflag = IGNBRK; // | ISTRIP;
 	newtio.c_oflag = 0;
@@ -34,7 +35,7 @@ void setser(int fd)
 	newtio.c_cc[VTIME] = 0;
 
 	if (tcsetattr(fd, TCSANOW, &newtio) == -1)
-		error_exit(true, "tcsetattr failed");
+		error_exit(true, gettext("tcsetattr failed: problem talking to serial port"));
 
 	tcflush(fd, TCIOFLUSH);
 }
@@ -189,14 +190,14 @@ std::vector<uint8_t> get_bytes(const int fd, const unsigned n)
 
 		int rc = poll(fds, 1, 100); // 100ms timeout
 		if (rc == -1)
-			error_exit(true, "Poll on powerbank failed");
+			error_exit(true, gettext("Poll on powerbank failed"));
 		if (rc == 0)
-			error_exit(true, "Powerbank went silent");
+			error_exit(true, gettext("Powerbank went silent"));
 
 		uint8_t c = 0;
 		rc = read(fd, &c, 1);
 		if (rc <= 0)
-			error_exit(true, "Problem receiving state from powerbank");
+			error_exit(true, gettext("Problem receiving state from powerbank"));
 
 		out.push_back(c);
 	}
@@ -207,7 +208,7 @@ std::vector<uint8_t> get_bytes(const int fd, const unsigned n)
 void request(const int fd, const uint8_t cmd)
 {
 	if (write(fd, &cmd, 1) != 1)
-		error_exit(true, "Problem sending command to powerbank");
+		error_exit(true, gettext("Problem sending command to powerbank"));
 }
 
 std::vector<uint8_t> get_state(const int fd)
@@ -227,13 +228,13 @@ retry:
 
 		int rc = poll(fds, 1, 100); // 100ms timeout
 		if (rc == -1)
-			error_exit(true, "Poll on powerbank failed");
+			error_exit(true, gettext("Poll on powerbank failed"));
 		if (rc == 0)
 			goto retry;
 
 		rc = read(fd, p, todo);
 		if (rc <= 0)
-			error_exit(true, "Problem receiving state from powerbank");
+			error_exit(true, gettext("Problem receiving state from powerbank"));
 
 		p += rc;
 		todo -= rc;
@@ -440,7 +441,7 @@ void dec_hv(const int fd)
 void set_hv(const int fd, const char *parameter)
 {
 	if (!parameter)
-		error_exit(false, "Parameter missing");
+		error_exit(false, gettext("Parameter missing"));
 
 	if (strcasecmp(parameter, "on"))
 		request(fd, 0x77);
@@ -451,7 +452,7 @@ void set_hv(const int fd, const char *parameter)
 void set_usb(const int fd, const char *parameter)
 {
 	if (!parameter)
-		error_exit(false, "Parameter missing");
+		error_exit(false, gettext("Parameter missing"));
 
 	if (strcasecmp(parameter, "on"))
 		request(fd, 0x75);
@@ -468,7 +469,7 @@ void set_name(const int fd, const char *const name)
 		size_t l = strlen(name);
 
 		if (l > 16)
-			error_exit(false, "Name too long");
+			error_exit(false, gettext("Name too long"));
 
 		memcpy(temp, name, l);
 	}
@@ -476,7 +477,7 @@ void set_name(const int fd, const char *const name)
 	request(fd, 0x43);
 
 	if (write(fd, temp, 16) != 16)
-		error_exit(true, "Error talking to power bank");
+		error_exit(true, gettext("Error talking to power bank"));
 }
 
 char to_hex(const int v)
@@ -490,17 +491,17 @@ char to_hex(const int v)
 void set_bq24295(const int fd, const int idx, const char *parameter)
 {
 	if (!parameter)
-		error_exit(false, "Parameter missing");
+		error_exit(false, gettext("Parameter missing"));
 
 	if (idx < 0 || idx > 9)
-		error_exit(false, "Index out of range");
+		error_exit(false, gettext("Index out of range"));
 
 	unsigned p = atoi(parameter);
 
 	char cmd[4] = { 0x71, char('0' + idx), to_hex(p >> 4), to_hex(p & 15) };
 
 	if (write(fd, cmd, sizeof cmd) != sizeof cmd)
-		error_exit(true, "Error talking to power bank");
+		error_exit(true, gettext("Error talking to power bank"));
 }
 
 void json_string(const char *name, const std::string & v, const bool next)
@@ -556,17 +557,17 @@ void dump(const int fd, const bool json)
 		printf("}\n");
 	}
 	else {
-		printf("name:\t%s\n", name.c_str());
+		printf(gettext("name:\t%s\n"), name.c_str());
 
-		printf("temperature:\t%f\n", get_temp(state));
-		printf("battery voltage:\t%f\n", get_battery_voltage(state));
-		printf("charging current:\t%f\n", get_charging_current(state));
-		printf("HV output current:\t%f\n", get_hv_output_current(state));
-		printf("HV output voltage:\t%f\n", get_hv_output_voltage(state));
-		printf("USB output current:\t%f\n", get_usb_output_current(state));
-		printf("Battery uptime:\t%u\n", get_battery_uptime(state));
+		printf(gettext("temperature:\t%f\n"), get_temp(state));
+		printf(gettext("battery voltage:\t%f\n"), get_battery_voltage(state));
+		printf(gettext("charging current:\t%f\n"), get_charging_current(state));
+		printf(gettext("HV output current:\t%f\n"), get_hv_output_current(state));
+		printf(gettext("HV output voltage:\t%f\n"), get_hv_output_voltage(state));
+		printf(gettext("USB output current:\t%f\n"), get_usb_output_current(state));
+		printf(gettext("Battery uptime:\t%u\n"), get_battery_uptime(state));
 
-		printf("BQ24295 registers:\t");
+		printf(gettext("BQ24295 registers:\t"));
 		std::vector<uint8_t> c = get_i2c_BQ24295(state);
 		for(size_t i=0; i<c.size(); i++) {
 			if (i)
@@ -577,25 +578,25 @@ void dump(const int fd, const bool json)
 		printf("\n");
 
 		if (get_battery_overvoltage(state))
-			printf("Battery overvoltage!!\n");
+			printf(gettext("Battery overvoltage!!\n"));
 		if (get_auto_send_statemachine(state))
-			printf("Statemachine is in auto send mode\n");
+			printf(gettext("Statemachine is in auto send mode\n"));
 		if (get_virtual_serial_port_connected(state))
-			printf("Virtual serial port connected\n");
+			printf(gettext("Virtual serial port connected\n"));
 		if (get_charging_port_plugged_in(state))
-			printf("Charging port plugged in\n");
+			printf(gettext("Charging port plugged in\n"));
 		if (get_warnings_enabled(state))
-			printf("Warnings enabled\n");
+			printf(gettext("Warnings enabled\n"));
 		if (get_charger_fault(state))
-			printf("Charger fault\n");
+			printf(gettext("Charger fault\n"));
 		if (get_battery_too_cold(state))
-			printf("Battery too cold!\n");
+			printf(gettext("Battery too cold!\n"));
 		else if (get_battery_too_hot(state))
-			printf("Battery too hot!!!\n");
+			printf(gettext("Battery too hot!!!\n"));
 		if (get_hv_output_on(state))
-			printf("HV output on\n");
+			printf(gettext("HV output on\n"));
 		if (get_usb_output_on(state))
-			printf("USB output on\n");
+			printf(gettext("USB output on\n"));
 	}
 }
 
@@ -666,6 +667,10 @@ int main(int argc, char *argv[])
 
 	determine_terminal_size();
 
+	setlocale (LC_ALL, "");
+	bindtextdomain("pbc", "/usr/share/locale");
+	textdomain("pbc");
+
 	static struct option long_options[] =
 	{
 		{"device",   	1, NULL, 'd' },
@@ -711,7 +716,7 @@ int main(int argc, char *argv[])
 				else if (strcasecmp(optarg, "dec-hv") == 0)
 					m = M_DEC_HV;
 				else
-					error_exit(false, "%s is an unknown mode", optarg);
+					error_exit(false, gettext("%s is an unknown mode"), optarg);
 				break;
 
 			case 'D':
@@ -750,10 +755,10 @@ int main(int argc, char *argv[])
 
 	int fd = open(dev, O_RDWR);
 	if (fd == -1)
-		error_exit(true, "Failed opening %s", dev);
+		error_exit(true, gettext("Failed opening %s"), dev);
 
 	if (do_fork && daemon(0, 0) == -1)
-		error_exit(true, "Failed forking into the background");
+		error_exit(true, gettext("Failed forking into the background"));
 
 	setser(fd);
 
