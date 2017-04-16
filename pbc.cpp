@@ -39,6 +39,75 @@ void setser(int fd)
 	tcflush(fd, TCIOFLUSH);
 }
 
+bool ansi_terminal(void)
+{
+	const char *term = getenv("TERM");
+
+	if (!isatty(1) || !isatty(2))
+		return false;
+
+	if (!term)
+		return false;
+
+	if (strcasestr(term, "ansi") == 0)
+		return true;
+
+	if (strcasestr(term, "console") == 0 || strcasestr(term, "con80x25") == 0 || strcasestr(term, "linux") == 0)
+		return true;
+
+	if (strcasestr(term, "screen") == 0)
+		return true;
+
+	if (strcasestr(term, "xterm") == 0)
+		return true;
+
+	if (strcasestr(term, "rxvt") == 0 || strcasestr(term, "konsole") == 0)
+		return true;
+
+	return false;
+}
+
+void set_bold(bool on)
+{
+	if (ansi_terminal()) {
+		if (on)
+			fprintf(stderr, "\x1b[1m");
+		else
+			fprintf(stderr, "\x1b[22m");
+	}
+}
+
+void set_underline(bool on)
+{
+	if (ansi_terminal()) {
+		if (on)
+			fprintf(stderr, "\x1b[4m");
+		else
+			fprintf(stderr, "\x1b[24m");
+	}
+}
+
+void reset_term()
+{
+	if (ansi_terminal())
+		fprintf(stderr, "\x1b[0m\x1b[2K\r");
+}
+
+void help_header(const char *str)
+{
+	fprintf(stderr, "\n");
+
+	set_bold(1);
+	fprintf(stderr, " *** ");
+
+	set_underline(1);
+	fprintf(stderr, "%s", str);
+	set_underline(0);
+
+	fprintf(stderr, " ***\n");
+	set_bold(0);
+}
+
 #define SWITCHES_COLUMN_WIDTH	24
 
 int max_x = 80, max_y = 24;
@@ -527,9 +596,9 @@ void dump(const int fd, const bool json)
 		json_uint32_t("battery-uptime", get_battery_uptime(state), true);
 
 		std::vector<uint8_t> c = get_i2c_BQ24295(state);
-		for(size_t i=0; i<c.size(); i++) {
+		for(unsigned i=0; i<unsigned(c.size()); i++) {
 			char *buffer = NULL;
-			asprintf(&buffer, "bq24295-reg-%zu", i);
+			asprintf(&buffer, "bq24295-reg-%u", i);
 
 			json_uint32_t(buffer, c.at(i), true);
 
@@ -624,7 +693,7 @@ void help(void)
 	fprintf(stderr, "\n");
 
 	/* where to connect to */
-	fprintf(stderr, gettext(" *** powerbankcontrol ***\n"));
+	help_header("main");
 	format_help("-d x", "--device", gettext("(virtual in case of USB -)serial device to which the powerbank is connected"));
 	format_help("-f", "--fork", gettext("fork into the background (become daemon)"));
 	format_help("-m", "--mode", gettext("mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"));
@@ -637,10 +706,18 @@ void help(void)
 	format_help(NULL, NULL, gettext("- inc-hv: increase HV voltage (in 64 steps)"));
 	format_help(NULL, NULL, gettext("- dec-hv: decrease HV voltage (in 64 steps)"));
 	format_help("-p", "--parameter", gettext("parameter (if any) for the command chosen"));
+
+	help_header("configuring bq24295");
 	format_help("-i", "--index", gettext("index (if any) for the command chosen"));
+
+	help_header("ups mode");
 	format_help("-D", "--power-off-after", gettext("how long to wait before shutdown after power loss"));
 	format_help("-s", "--shutdown-command", gettext("command to use to power down system (see -D and -m ups)"));
+
+	help_header("dump format");
 	format_help("-j", "--json", gettext("JSON output for -m dump"));
+
+	help_header("meta");
 	format_help("-v", "--version", gettext("get version of this program"));
 	format_help("-h", "--help", gettext("get this help"));
 }
