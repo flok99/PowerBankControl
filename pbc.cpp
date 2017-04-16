@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fcntl.h>
 #include <getopt.h>
 #include <libintl.h>
@@ -16,8 +17,6 @@
 #include <sys/stat.h>
 
 #include "error.h"
-
-#define min(x, y) ((x) < (y) ? (x) : (y))
 
 // only required when using a real serial port
 void setser(int fd) 
@@ -137,7 +136,7 @@ void format_help(const char *short_str, const char *long_str, const char *descr)
 		if (!str_len)
 			break;
 
-		len_before_ww = min(str_len, cur_descr_width);
+		len_before_ww = std::min(str_len, cur_descr_width);
 
 		n = &p[len_before_ww];
 		kn = n;
