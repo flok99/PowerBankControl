@@ -504,7 +504,7 @@ void set_hv(const int fd, const char *parameter)
 	if (!parameter)
 		error_exit(false, gettext("Parameter missing"));
 
-	if (strcasecmp(parameter, "on"))
+	if (strcasecmp(parameter, "on") == 0)
 		request(fd, 0x77);
 	else
 		request(fd, 0x78);
@@ -515,7 +515,7 @@ void set_usb(const int fd, const char *parameter)
 	if (!parameter)
 		error_exit(false, gettext("Parameter missing"));
 
-	if (strcasecmp(parameter, "on"))
+	if (strcasecmp(parameter, "on") == 0)
 		request(fd, 0x75);
 	else
 		request(fd, 0x76);
