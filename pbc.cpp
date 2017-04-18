@@ -661,6 +661,76 @@ void dump(const int fd, const bool json)
 	}
 }
 
+void graph(const int fd)
+{
+	bool first = true;
+	int y = 0;
+
+	double scale_voltage = (max_x - 1) / 24.0, scale_current = (max_x - 1) / 3.0;
+
+	char line[max_x];
+
+	for(;;) {
+		if (++y >= max_y - 3 || first) {
+			printf("| battery voltage, * charging current, + hv output current,\n");
+			printf("- hv output voltage, # usb output current\n");
+
+			memset(line, ' ', sizeof line);
+			line[max_x - 1] = 0x00;
+
+			memcpy(&line[int(scale_current * 1.0)], "C1", 2);
+			memcpy(&line[int(scale_current * 2.0)], "C2", 2);
+
+			memcpy(&line[int(scale_voltage * 5.0)], "V5", 2);
+			memcpy(&line[int(scale_voltage * 10.0)], "V10", 3);
+			memcpy(&line[int(scale_voltage * 15.0)], "V15", 3);
+			memcpy(&line[int(scale_voltage * 20.0)], "V20", 3);
+
+			printf("%s\n", line);
+
+			y = 0;
+			first = false;
+		}
+
+		const std::vector<uint8_t> state = get_state(fd);
+
+		double battery_voltage = get_battery_voltage(state);
+		double charging_current = get_charging_current(state);
+		double hv_output_current = get_hv_output_current(state);
+		double hv_output_voltage = get_hv_output_voltage(state);
+		double usb_output_current = get_usb_output_current(state);
+
+		memset(line, ' ', sizeof line);
+		line[max_x - 1] = 0x00;
+
+		int x;
+
+		x = battery_voltage * scale_voltage;
+		if (x < max_x)
+			line[x] = '|';
+
+		x = charging_current * scale_current;
+		if (x < max_x)
+			line[x]= '*';
+
+		x = hv_output_current * scale_current;
+		if (x < max_x)
+			line[x] = '+';
+
+		x = hv_output_voltage * scale_voltage;
+		if (x < max_x)
+			line[x] = '-';
+
+		x = usb_output_current * scale_current;
+		if (x < max_x)
+			line[x] = '#';
+
+		printf("%s\n", line);
+
+		usleep(250 * 1000);
+	}
+}
+
 void exec(const char *script)
 {
 	if (script)
@@ -722,7 +792,7 @@ void help(void)
 	format_help("-h", "--help", gettext("get this help"));
 }
 
-typedef enum { M_UPS, M_DUMP, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_SET_HV, M_INC_HV, M_DEC_HV } pbc_mode_t;
+typedef enum { M_UPS, M_DUMP, M_GRAPH, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_SET_HV, M_INC_HV, M_DEC_HV } pbc_mode_t;
 
 int main(int argc, char *argv[])
 {
@@ -770,6 +840,8 @@ int main(int argc, char *argv[])
 			case 'm':
 				if (strcasecmp(optarg, "dump") == 0)
 					m = M_DUMP;
+				else if (strcasecmp(optarg, "graph") == 0)
+					m = M_GRAPH;
 				else if (strcasecmp(optarg, "ups") == 0)
 					m = M_UPS;
 				else if (strcasecmp(optarg, "set-name") == 0)
@@ -833,6 +905,8 @@ int main(int argc, char *argv[])
 
 	if (m == M_DUMP)
 		dump(fd, json);
+	else if (m == M_GRAPH)
+		graph(fd);
 	else if (m == M_SET_NAME)
 		set_name(fd, parameter);
 	else if (m == M_SET_bq24295)
