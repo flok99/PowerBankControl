@@ -619,6 +619,7 @@ void dump(const int fd, const bool json)
 	}
 	else {
 		printf(gettext("name:\t%s\n"), name.c_str());
+		printf(gettext("descr:\t%s\n"), descr.c_str());
 
 		printf(gettext("temperature:\t%f degreese celsius\n"), get_temp(state));
 		printf(gettext("battery voltage:\t%f V\n"), get_battery_voltage(state));
@@ -762,15 +763,19 @@ void exec(const char *script)
 
 void ups(const int fd, const unsigned power_off_after, const char *poweroff_script)
 {
-	for(;;) {
+	bool p_off_trig = false;
+
+	for(;!p_off_trig;) {
 		std::vector<uint8_t> state = get_state(fd);
 
 		if (get_charging_port_plugged_in(state) == false) {
 			sleep(power_off_after);
 
 			state = get_state(fd);
-			if (get_charging_port_plugged_in(state) == false)
+			if (get_charging_port_plugged_in(state) == false) {
+				p_off_trig = true;
 				exec(poweroff_script);
+			}
 		}
 	}
 }
@@ -812,7 +817,7 @@ void help(void)
 	format_help("-j", "--json", gettext("JSON output for -m dump"));
 
 	help_header(gettext("meta"));
-	format_help("-v", "--version", gettext("get version of this program"));
+	format_help("-V", "--version", gettext("get version of this program"));
 	format_help("-h", "--help", gettext("get this help"));
 }
 
