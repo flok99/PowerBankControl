@@ -1,7 +1,7 @@
 # PowerBankControl
 # Copyright (C) 2017 folkert van heusden
 # This file is distributed under the same license as the powerbankcontrol package.
-# folkert van heusden, mail@vanheusden.com
+# folkert van heusden, mail@vanheusden.com 2017
 #
 #, fuzzy
 msgid ""
@@ -14,7 +14,7 @@ msgstr ""
 "Language-Team: Dutch <nl@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=latin\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: pbc.cpp:860
