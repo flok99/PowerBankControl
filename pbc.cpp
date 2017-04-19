@@ -763,7 +763,7 @@ void help(void)
 	fprintf(stderr, "\n");
 
 	/* where to connect to */
-	help_header("main");
+	help_header(gettext("main"));
 	format_help("-d x", "--device", gettext("(virtual in case of USB -)serial device to which the powerbank is connected"));
 	format_help("-f", "--fork", gettext("fork into the background (become daemon)"));
 	format_help("-m", "--mode", gettext("mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"));
@@ -777,17 +777,17 @@ void help(void)
 	format_help(NULL, NULL, gettext("- dec-hv: decrease HV voltage (in 64 steps)"));
 	format_help("-p", "--parameter", gettext("parameter (if any) for the command chosen"));
 
-	help_header("configuring bq24295");
+	help_header(gettext("configuring bq24295"));
 	format_help("-i", "--index", gettext("index (if any) for the command chosen"));
 
-	help_header("ups mode");
+	help_header(gettext("ups mode"));
 	format_help("-D", "--power-off-after", gettext("how long to wait before shutdown after power loss"));
 	format_help("-s", "--shutdown-command", gettext("command to use to power down system (see -D and -m ups)"));
 
-	help_header("dump format");
+	help_header(gettext("dump format"));
 	format_help("-j", "--json", gettext("JSON output for -m dump"));
 
-	help_header("meta");
+	help_header(gettext("meta"));
 	format_help("-v", "--version", gettext("get version of this program"));
 	format_help("-h", "--help", gettext("get this help"));
 }

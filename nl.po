@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-19 08:51+0200\n"
+"POT-Creation-Date: 2017-04-19 09:42+0200\n"
 "PO-Revision-Date: 2017-04-19 08:00+200\n"
 "Last-Translator: Folkert van Heusden <mail@vanheusden.com>\n"
 "Language-Team: Dutch <nl@li.org>\n"
@@ -25,8 +25,7 @@ msgstr "%s is niet bekend"
 #: pbc.cpp:767
 msgid ""
 "(virtual in case of USB -)serial device to which the powerbank is connected"
-msgstr ""
-"seriele port waaraan de powerbank verbonden is"
+msgstr "seriele port waaraan de powerbank verbonden is"
 
 #: pbc.cpp:777
 msgid "- dec-hv: decrease HV voltage (in 64 steps)"
@@ -34,12 +33,12 @@ msgstr "- dec-hv: verlaag het HV voltage (in 64 stappen)"
 
 #: pbc.cpp:771
 msgid "- dump: dump configuration & state of power bank"
-msgstr "- dump: dump de configuratie en de status van de power bank"
+msgstr "- dump: dump de configuratie en de toestand van de power bank"
 
 #: pbc.cpp:676
 #, c-format
 msgid "- hv output voltage, # usb output current\n"
-msgstr "- hv voltage, # usb amperage\n"
+msgstr "- hv voltage, # usb stroom\n"
 
 #: pbc.cpp:776
 msgid "- inc-hv: increase HV voltage (in 64 steps)"
@@ -55,7 +54,7 @@ msgstr ""
 
 #: pbc.cpp:775
 msgid "- set-hv: toggle state of HV power (-p: on/off)"
-msgstr "- set-hv: schakel status van HV power (-p: on/off)"
+msgstr "- set-hv: schakel status van HV power (-p: on (=aan)/off (=uit))"
 
 #: pbc.cpp:772
 msgid "- set-name: configure name of bank"
@@ -63,195 +62,218 @@ msgstr "- set-name: configureer de naam van het apparaat"
 
 #: pbc.cpp:774
 msgid "- set-usb: toggle state of USB power (-p: on/off)"
-msgstr ""
+msgstr "- set-usb: schakel status van USB power (-p: on (=aan)/off (=uit))"
 
 #: pbc.cpp:770
 msgid ""
 "- ups: shutdown system when power is off for a while (-D) using a user "
 "selected command (-s)"
 msgstr ""
+"-ups: zet het systeem uit als de oplaad aansluiting even (-D) niet is "
+"aangesloten en doe dat met het commando dat -S specificeert"
 
 #: pbc.cpp:631
 #, c-format
 msgid "BQ24295 registers:\t"
-msgstr ""
+msgstr "BQ24295 instellingen:\t"
 
 #: pbc.cpp:642
 #, c-format
 msgid "Battery overvoltage!!\n"
-msgstr ""
+msgstr "Batterij heeft te hoog voltage!!\n"
 
 #: pbc.cpp:654
 #, c-format
 msgid "Battery too cold!\n"
-msgstr ""
+msgstr "Batterij te koud!\n"
 
 #: pbc.cpp:656
 #, c-format
 msgid "Battery too hot!!!\n"
-msgstr ""
+msgstr "Batterij te warm!!!\n"
 
 #: pbc.cpp:629
 #, c-format
 msgid "Battery uptime:\t%u\n"
-msgstr ""
+msgstr "Batterij aan tijd:\t%u\n"
 
 #: pbc.cpp:652
 #, c-format
 msgid "Charger fault\n"
-msgstr ""
+msgstr "Oplaad fout\n"
 
 #: pbc.cpp:648
 #, c-format
 msgid "Charging port plugged in\n"
-msgstr ""
+msgstr "Oplaad aansluiting ingestoken\n"
 
 #: pbc.cpp:541 pbc.cpp:565
 msgid "Error talking to power bank"
-msgstr ""
+msgstr "Probleem bij communicatie met power bank"
 
 #: pbc.cpp:902
 msgid "Failed forking into the background"
-msgstr ""
+msgstr "Fout bij omschakelen naar achtergrond proces"
 
 #: pbc.cpp:899
 #, c-format
 msgid "Failed opening %s"
-msgstr ""
+msgstr "Kan %s niet openen"
 
 #: pbc.cpp:626
 #, c-format
 msgid "HV output current:\t%f\n"
-msgstr ""
+msgstr "HV uitvoer stroom:\t%f\n"
 
 #: pbc.cpp:658
 #, c-format
 msgid "HV output on\n"
-msgstr ""
+msgstr "HV uitvoer aan\n"
 
 #: pbc.cpp:627
 #, c-format
 msgid "HV output voltage:\t%f\n"
-msgstr ""
+msgstr "HV uitvoer voltage:\t%f\n"
 
 #: pbc.cpp:558
 msgid "Index out of range"
-msgstr ""
+msgstr "Index buiten bereik"
 
 #: pbc.cpp:788
 msgid "JSON output for -m dump"
-msgstr ""
+msgstr "JSON indeling uitvoer bij -m dump"
 
 #: pbc.cpp:533
 msgid "Name too long"
-msgstr ""
+msgstr "Naam is te lang"
 
 #: pbc.cpp:505 pbc.cpp:516 pbc.cpp:555
 msgid "Parameter missing"
-msgstr ""
+msgstr "Er ontbreekt een parameter"
 
 #: pbc.cpp:257 pbc.cpp:295
 msgid "Poll on powerbank failed"
-msgstr ""
+msgstr "Uitlezen powerbank mislukt"
 
 #: pbc.cpp:259
 msgid "Powerbank went silent"
-msgstr ""
+msgstr "Powerbank viel stil"
 
 #: pbc.cpp:264 pbc.cpp:301
 msgid "Problem receiving state from powerbank"
-msgstr ""
+msgstr "Probleem bij ontvangen toestand van powerbank"
 
 #: pbc.cpp:275
 msgid "Problem sending command to powerbank"
-msgstr ""
+msgstr "Probleem bij zenden commando naar powerbank"
 
 #: pbc.cpp:644
 #, c-format
 msgid "Statemachine is in auto send mode\n"
-msgstr ""
+msgstr "Toestandsmachine staat in automatisch verzenden mode\n"
 
 #: pbc.cpp:628
 #, c-format
 msgid "USB output current:\t%f\n"
-msgstr ""
+msgstr "USB uitvoer stroom:\t%f\n"
 
 #: pbc.cpp:660
 #, c-format
 msgid "USB output on\n"
-msgstr ""
+msgstr "USB uitvoer staat aan\n"
 
 #: pbc.cpp:646
 #, c-format
 msgid "Virtual serial port connected\n"
-msgstr ""
+msgstr "Virtuele seriele port is aangesloten\n"
 
 #: pbc.cpp:650
 #, c-format
 msgid "Warnings enabled\n"
-msgstr ""
+msgstr "Waarschuwing aan\n"
 
 #: pbc.cpp:624
 #, c-format
 msgid "battery voltage:\t%f\n"
-msgstr ""
+msgstr "batterij voltage:\t%f\n"
 
 #: pbc.cpp:625
 #, c-format
 msgid "charging current:\t%f\n"
-msgstr ""
+msgstr "oplaad stroom:\t%f\n"
 
 #: pbc.cpp:785
 msgid "command to use to power down system (see -D and -m ups)"
-msgstr ""
+msgstr "welk commando te gebruiken om het systeem uit te zetten (zie -D en -m ups)"
+
+#: pbc.cpp:780
+msgid "configuring bq24295"
+msgstr "configureren bq24295"
+
+#: pbc.cpp:787
+msgid "dump format"
+msgstr "indeling dump uitvoer"
 
 #: pbc.cpp:768
 msgid "fork into the background (become daemon)"
-msgstr ""
+msgstr "draai verder in de achtergrond"
 
 #: pbc.cpp:792
 msgid "get this help"
-msgstr ""
+msgstr "geeft deze help"
 
 #: pbc.cpp:791
 msgid "get version of this program"
-msgstr ""
+msgstr "toon versie-nummer van dit programma"
 
 #: pbc.cpp:784
 msgid "how long to wait before shutdown after power loss"
-msgstr ""
+msgstr "hoe lang te wachten voordat het systeem uitgezet wordt nadat de stroombron verwijderd is"
 
 #: pbc.cpp:781
 msgid "index (if any) for the command chosen"
-msgstr ""
+msgstr "index (indien van toepassing) voor het gekozen commando"
+
+#. where to connect to
+#: pbc.cpp:766
+msgid "main"
+msgstr "algemeen"
+
+#: pbc.cpp:790
+msgid "meta"
+msgstr "meta"
 
 #: pbc.cpp:769
 msgid "mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"
-msgstr ""
+msgstr "mode van dit programma: ups, dump, set-name, set-bq24295, set-usb, set-hv"
 
 #: pbc.cpp:621
 #, c-format
 msgid "name:\t%s\n"
-msgstr ""
+msgstr "naam:\t%s\n"
 
 #: pbc.cpp:778
 msgid "parameter (if any) for the command chosen"
-msgstr ""
+msgstr "parameter (indien van toepassing) voor het gekozen commando"
 
 #: pbc.cpp:27
 msgid "tcgetattr failed: did you select a powerbank serial port?"
-msgstr ""
+msgstr "tcgetattr faalde: heb je een powerbank seriele poort gekozen?"
 
 #: pbc.cpp:37
 msgid "tcsetattr failed: problem talking to serial port"
-msgstr ""
+msgstr "tcsetattr faalde: probleem bij communicatie"
 
 #: pbc.cpp:623
 #, c-format
 msgid "temperature:\t%f\n"
-msgstr ""
+msgstr "temperatuur:\t%f\n"
+
+#: pbc.cpp:783
+msgid "ups mode"
+msgstr "ups mode"
 
 #: pbc.cpp:675
 #, c-format
 msgid "| battery voltage, * charging current, + hv output current,\n"
-msgstr ""
+msgstr "| batterij voltage, * oplaad stroom, + hv uitvoer stroom,\n"
