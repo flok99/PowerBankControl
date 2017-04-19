@@ -661,6 +661,28 @@ void dump(const int fd, const bool json)
 	}
 }
 
+void putChar(char *line, int x, const char *c, const bool red)
+{
+	if (x < 0)
+		x = 0;
+
+	if (x >= max_x)
+		x = max_x -1;
+
+	memcpy(&line[x], c, strlen(c));
+
+	if (ansi_terminal()) {
+		fprintf(stderr, "\x1b[%dG", x + 1);
+
+		if (red)
+			fprintf(stderr, "\x1b[31m");
+		else
+			fprintf(stderr, "\x1b[32m");
+
+		fprintf(stderr, "%s", c);
+	}
+}
+
 void graph(const int fd, const char *parameter)
 {
 	bool first = true;
@@ -679,15 +701,16 @@ void graph(const int fd, const char *parameter)
 			memset(line, ' ', sizeof line);
 			line[max_x - 1] = 0x00;
 
-			memcpy(&line[int(scale_current * 1.0)], "C1", 2);
-			memcpy(&line[int(scale_current * 2.0)], "C2", 2);
+			putChar(line, int(scale_current * 1.0), "C1", true);
+			putChar(line, int(scale_current * 2.0), "C2", true);
 
-			memcpy(&line[int(scale_voltage * 5.0)], "V5", 2);
-			memcpy(&line[int(scale_voltage * 10.0)], "V10", 3);
-			memcpy(&line[int(scale_voltage * 15.0)], "V15", 3);
-			memcpy(&line[int(scale_voltage * 20.0)], "V20", 3);
+			putChar(line, int(scale_voltage * 5.0), "V5", false);
+			putChar(line, int(scale_voltage * 10.0), "V10", false);
+			putChar(line, int(scale_voltage * 15.0), "V15", false);
+			putChar(line, int(scale_voltage * 20.0), "V20", false);
 
-			printf("%s\n", line);
+			if (!ansi_terminal())
+				printf("%s\n", line);
 
 			y = 0;
 			first = false;
@@ -707,26 +730,24 @@ void graph(const int fd, const char *parameter)
 		int x;
 
 		x = battery_voltage * scale_voltage;
-		if (x < max_x)
-			line[x] = '|';
+		putChar(line, x, "|", false);
 
 		x = charging_current * scale_current;
-		if (x < max_x)
-			line[x]= '*';
+		putChar(line, x, "*", true);
 
 		x = hv_output_current * scale_current;
-		if (x < max_x)
-			line[x] = '+';
+		putChar(line, x, "+", true);
 
 		x = hv_output_voltage * scale_voltage;
-		if (x < max_x)
-			line[x] = '-';
+		putChar(line, x, "-", false);
 
 		x = usb_output_current * scale_current;
-		if (x < max_x)
-			line[x] = '#';
+		putChar(line, x, "#", true);
 
-		printf("%s\n", line);
+		if (ansi_terminal())
+			fprintf(stderr, "\x1b[m\n");
+		else
+			printf("%s\n", line);
 
 		usleep(interval * 1000);
 	}
