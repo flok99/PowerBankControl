@@ -315,7 +315,7 @@ double get_temp(const std::vector<uint8_t> & state)
 {
 	int16_t v = state.at(0) | (state.at(1) << 8);
 
-	return v / 10.0;
+	return v / 100.0;
 }
 
 double get_milli(const std::vector<uint8_t> & state, const int offset)
@@ -620,13 +620,13 @@ void dump(const int fd, const bool json)
 	else {
 		printf(gettext("name:\t%s\n"), name.c_str());
 
-		printf(gettext("temperature:\t%f\n"), get_temp(state));
-		printf(gettext("battery voltage:\t%f\n"), get_battery_voltage(state));
-		printf(gettext("charging current:\t%f\n"), get_charging_current(state));
-		printf(gettext("HV output current:\t%f\n"), get_hv_output_current(state));
-		printf(gettext("HV output voltage:\t%f\n"), get_hv_output_voltage(state));
-		printf(gettext("USB output current:\t%f\n"), get_usb_output_current(state));
-		printf(gettext("Battery uptime:\t%u\n"), get_battery_uptime(state));
+		printf(gettext("temperature:\t%f degreese celsius\n"), get_temp(state));
+		printf(gettext("battery voltage:\t%f V\n"), get_battery_voltage(state));
+		printf(gettext("charging current:\t%f A\n"), get_charging_current(state));
+		printf(gettext("HV output current:\t%f A\n"), get_hv_output_current(state));
+		printf(gettext("HV output voltage:\t%f V\n"), get_hv_output_voltage(state));
+		printf(gettext("USB output current:\t%f A\n"), get_usb_output_current(state));
+		printf(gettext("Battery uptime:\t%u seconds\n"), get_battery_uptime(state));
 
 		printf(gettext("BQ24295 registers:\t"));
 		std::vector<uint8_t> c = get_i2c_BQ24295(state);
@@ -652,7 +652,7 @@ void dump(const int fd, const bool json)
 			printf(gettext("Charger fault\n"));
 		if (get_battery_too_cold(state))
 			printf(gettext("Battery too cold!\n"));
-		else if (get_battery_too_hot(state))
+		if (get_battery_too_hot(state))
 			printf(gettext("Battery too hot!!!\n"));
 		if (get_hv_output_on(state))
 			printf(gettext("HV output on\n"));
@@ -704,6 +704,7 @@ void graph(const int fd, const char *parameter)
 			putChar(line, int(scale_current * 1.0), "C1", true);
 			putChar(line, int(scale_current * 2.0), "C2", true);
 
+			putChar(line, int(scale_voltage * 3.0), "V3", false);
 			putChar(line, int(scale_voltage * 5.0), "V5", false);
 			putChar(line, int(scale_voltage * 10.0), "V10", false);
 			putChar(line, int(scale_voltage * 15.0), "V15", false);
@@ -820,7 +821,7 @@ typedef enum { M_UPS, M_DUMP, M_GRAPH, M_SET_NAME, M_SET_bq24295, M_SET_USB, M_S
 int main(int argc, char *argv[])
 {
 	bool do_fork = false, json = false;
-	const char *dev = "/dev/ttyUSB0";
+	const char *dev = "/dev/ttyACM0";
 	pbc_mode_t m = M_DUMP;
 	unsigned power_off_after = 60;
 	const char *poweroff_script = "/sbin/poweroff";
