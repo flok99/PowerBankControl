@@ -5,14 +5,20 @@ LDFLAGS=$(DEBUG)
 CXXFLAGS+=-O3 -Wall -DVERSION=\"$(VERSION)\" $(DEBUG)
 
 OBJS=error.o pbc.o
+TRANSLATIONS=nl.mo
 
 all: powerbankcontrol
 
-powerbankcontrol: $(OBJS)
+nl.mo: nl.po
+	msgfmt -o nl.mo nl.po
+
+powerbankcontrol: $(OBJS) $(TRANSLATIONS)
 	$(CXX) $(OBJS) $(LDFLAGS) -o powerbankcontrol
 
-install: powerbankcontrol
+install: powerbankcontrol $(TRANSLATIONS)
 	cp powerbankcontrol $(DESTDIR)/usr/local/sbin
+	mkdir -p $(DESTDIR)/usr/share/locale/nl/LC_MESSAGES
+	cp nl.mo $(DESTDIR)/usr/share/locale/nl/LC_MESSAGES/powerbankcontrol.mo
 
 uninstall: clean
 	rm -f $(DESTDIR)/usr/local/sbin/powerbankcontrol

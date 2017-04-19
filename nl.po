@@ -1,0 +1,257 @@
+# PowerBankControl
+# Copyright (C) 2017 folkert van heusden
+# This file is distributed under the same license as the powerbankcontrol package.
+# folkert van heusden, mail@vanheusden.com
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-19 08:51+0200\n"
+"PO-Revision-Date: 2017-04-19 08:00+200\n"
+"Last-Translator: Folkert van Heusden <mail@vanheusden.com>\n"
+"Language-Team: Dutch <nl@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=latin\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: pbc.cpp:860
+#, c-format
+msgid "%s is an unknown mode"
+msgstr "%s is niet bekend"
+
+#: pbc.cpp:767
+msgid ""
+"(virtual in case of USB -)serial device to which the powerbank is connected"
+msgstr ""
+"seriele port waaraan de powerbank verbonden is"
+
+#: pbc.cpp:777
+msgid "- dec-hv: decrease HV voltage (in 64 steps)"
+msgstr "- dec-hv: verlaag het HV voltage (in 64 stappen)"
+
+#: pbc.cpp:771
+msgid "- dump: dump configuration & state of power bank"
+msgstr "- dump: dump de configuratie en de status van de power bank"
+
+#: pbc.cpp:676
+#, c-format
+msgid "- hv output voltage, # usb output current\n"
+msgstr "- hv voltage, # usb amperage\n"
+
+#: pbc.cpp:776
+msgid "- inc-hv: increase HV voltage (in 64 steps)"
+msgstr "- inc-hv: verhoog HV voltage (in 64 stappen)"
+
+#: pbc.cpp:773
+msgid ""
+"- set-bq24295: configure charger chip, see data-sheet at http://www.ti.com/"
+"lit/ds/symlink/bq24295.pdf"
+msgstr ""
+"- set-bq24295: configureer oplaad chip, zie data-sheet op http://www.ti.com/"
+"lit/ds/symlink/bq24295.pdf"
+
+#: pbc.cpp:775
+msgid "- set-hv: toggle state of HV power (-p: on/off)"
+msgstr "- set-hv: schakel status van HV power (-p: on/off)"
+
+#: pbc.cpp:772
+msgid "- set-name: configure name of bank"
+msgstr "- set-name: configureer de naam van het apparaat"
+
+#: pbc.cpp:774
+msgid "- set-usb: toggle state of USB power (-p: on/off)"
+msgstr ""
+
+#: pbc.cpp:770
+msgid ""
+"- ups: shutdown system when power is off for a while (-D) using a user "
+"selected command (-s)"
+msgstr ""
+
+#: pbc.cpp:631
+#, c-format
+msgid "BQ24295 registers:\t"
+msgstr ""
+
+#: pbc.cpp:642
+#, c-format
+msgid "Battery overvoltage!!\n"
+msgstr ""
+
+#: pbc.cpp:654
+#, c-format
+msgid "Battery too cold!\n"
+msgstr ""
+
+#: pbc.cpp:656
+#, c-format
+msgid "Battery too hot!!!\n"
+msgstr ""
+
+#: pbc.cpp:629
+#, c-format
+msgid "Battery uptime:\t%u\n"
+msgstr ""
+
+#: pbc.cpp:652
+#, c-format
+msgid "Charger fault\n"
+msgstr ""
+
+#: pbc.cpp:648
+#, c-format
+msgid "Charging port plugged in\n"
+msgstr ""
+
+#: pbc.cpp:541 pbc.cpp:565
+msgid "Error talking to power bank"
+msgstr ""
+
+#: pbc.cpp:902
+msgid "Failed forking into the background"
+msgstr ""
+
+#: pbc.cpp:899
+#, c-format
+msgid "Failed opening %s"
+msgstr ""
+
+#: pbc.cpp:626
+#, c-format
+msgid "HV output current:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:658
+#, c-format
+msgid "HV output on\n"
+msgstr ""
+
+#: pbc.cpp:627
+#, c-format
+msgid "HV output voltage:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:558
+msgid "Index out of range"
+msgstr ""
+
+#: pbc.cpp:788
+msgid "JSON output for -m dump"
+msgstr ""
+
+#: pbc.cpp:533
+msgid "Name too long"
+msgstr ""
+
+#: pbc.cpp:505 pbc.cpp:516 pbc.cpp:555
+msgid "Parameter missing"
+msgstr ""
+
+#: pbc.cpp:257 pbc.cpp:295
+msgid "Poll on powerbank failed"
+msgstr ""
+
+#: pbc.cpp:259
+msgid "Powerbank went silent"
+msgstr ""
+
+#: pbc.cpp:264 pbc.cpp:301
+msgid "Problem receiving state from powerbank"
+msgstr ""
+
+#: pbc.cpp:275
+msgid "Problem sending command to powerbank"
+msgstr ""
+
+#: pbc.cpp:644
+#, c-format
+msgid "Statemachine is in auto send mode\n"
+msgstr ""
+
+#: pbc.cpp:628
+#, c-format
+msgid "USB output current:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:660
+#, c-format
+msgid "USB output on\n"
+msgstr ""
+
+#: pbc.cpp:646
+#, c-format
+msgid "Virtual serial port connected\n"
+msgstr ""
+
+#: pbc.cpp:650
+#, c-format
+msgid "Warnings enabled\n"
+msgstr ""
+
+#: pbc.cpp:624
+#, c-format
+msgid "battery voltage:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:625
+#, c-format
+msgid "charging current:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:785
+msgid "command to use to power down system (see -D and -m ups)"
+msgstr ""
+
+#: pbc.cpp:768
+msgid "fork into the background (become daemon)"
+msgstr ""
+
+#: pbc.cpp:792
+msgid "get this help"
+msgstr ""
+
+#: pbc.cpp:791
+msgid "get version of this program"
+msgstr ""
+
+#: pbc.cpp:784
+msgid "how long to wait before shutdown after power loss"
+msgstr ""
+
+#: pbc.cpp:781
+msgid "index (if any) for the command chosen"
+msgstr ""
+
+#: pbc.cpp:769
+msgid "mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"
+msgstr ""
+
+#: pbc.cpp:621
+#, c-format
+msgid "name:\t%s\n"
+msgstr ""
+
+#: pbc.cpp:778
+msgid "parameter (if any) for the command chosen"
+msgstr ""
+
+#: pbc.cpp:27
+msgid "tcgetattr failed: did you select a powerbank serial port?"
+msgstr ""
+
+#: pbc.cpp:37
+msgid "tcsetattr failed: problem talking to serial port"
+msgstr ""
+
+#: pbc.cpp:623
+#, c-format
+msgid "temperature:\t%f\n"
+msgstr ""
+
+#: pbc.cpp:675
+#, c-format
+msgid "| battery voltage, * charging current, + hv output current,\n"
+msgstr ""

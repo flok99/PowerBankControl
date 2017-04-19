@@ -672,8 +672,8 @@ void graph(const int fd)
 
 	for(;;) {
 		if (++y >= max_y - 3 || first) {
-			printf("| battery voltage, * charging current, + hv output current,\n");
-			printf("- hv output voltage, # usb output current\n");
+			printf(gettext("| battery voltage, * charging current, + hv output current,\n"));
+			printf(gettext("- hv output voltage, # usb output current\n"));
 
 			memset(line, ' ', sizeof line);
 			line[max_x - 1] = 0x00;
@@ -806,9 +806,9 @@ int main(int argc, char *argv[])
 
 	determine_terminal_size();
 
-	setlocale (LC_ALL, "");
-	bindtextdomain("pbc", "/usr/share/locale");
-	textdomain("pbc");
+	setlocale(LC_ALL, "");
+	bindtextdomain("powerbankcontrol", "/usr/share/locale");
+	textdomain("powerbankcontrol");
 
 	static struct option long_options[] =
 	{
