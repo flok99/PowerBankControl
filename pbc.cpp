@@ -661,14 +661,15 @@ void dump(const int fd, const bool json)
 	}
 }
 
-void graph(const int fd)
+void graph(const int fd, const char *parameter)
 {
 	bool first = true;
 	int y = 0;
 
 	double scale_voltage = (max_x - 1) / 24.0, scale_current = (max_x - 1) / 3.0;
-
 	char line[max_x];
+
+	int interval = parameter ? atoi(parameter) : 200;
 
 	for(;;) {
 		if (++y >= max_y - 3 || first) {
@@ -727,7 +728,7 @@ void graph(const int fd)
 
 		printf("%s\n", line);
 
-		usleep(250 * 1000);
+		usleep(interval * 1000);
 	}
 }
 
@@ -768,6 +769,7 @@ void help(void)
 	format_help("-f", "--fork", gettext("fork into the background (become daemon)"));
 	format_help("-m", "--mode", gettext("mode of this tool: ups, dump, set-name, set-bq24295, set-usb, set-hv"));
 	format_help(NULL, NULL, gettext("- ups: shutdown system when power is off for a while (-D) using a user selected command (-s)"));
+	format_help(NULL, NULL, gettext("- graph: draw a graph (on the terminal) in realtime of all measurements. use -p to set an interval in ms."));
 	format_help(NULL, NULL, gettext("- dump: dump configuration & state of power bank"));
 	format_help(NULL, NULL, gettext("- set-name: configure name of bank"));
 	format_help(NULL, NULL, gettext("- set-bq24295: configure charger chip, see data-sheet at http://www.ti.com/lit/ds/symlink/bq24295.pdf"));
@@ -906,7 +908,7 @@ int main(int argc, char *argv[])
 	if (m == M_DUMP)
 		dump(fd, json);
 	else if (m == M_GRAPH)
-		graph(fd);
+		graph(fd, parameter);
 	else if (m == M_SET_NAME)
 		set_name(fd, parameter);
 	else if (m == M_SET_bq24295)
