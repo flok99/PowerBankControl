@@ -927,6 +927,9 @@ int main(int argc, char *argv[])
 	if (fd == -1)
 		error_exit(true, gettext("Failed opening %s"), dev);
 
+	if (ioctl(fd, TIOCEXCL) == -1)
+		error_exit(true, gettext("Failed locking %s"), dev);
+
 	if (do_fork && daemon(0, 0) == -1)
 		error_exit(true, gettext("Failed forking into the background"));
 
